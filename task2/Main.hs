@@ -12,8 +12,8 @@ data RPS = Rock | Paper | Scissors
 main :: IO ()
 main = do
     inputFileName <- head <$> getArgs
-    strategy  <- readInput inputFileName
-    strategy2 <- readInputP2 inputFileName
+    strategy  <- readInput parseMovesV1 inputFileName
+    strategy2 <- readInput parseMovesV2 inputFileName
     print $ totalScore strategy
     print $ totalScore strategy2
     where
@@ -56,29 +56,21 @@ scoreForRound rpc =
     where points = price (snd rpc)
 
 
-readInput :: FilePath -> IO Strategy
-readInput fp = do
+readInput :: (String -> (RPS, RPS)) -> FilePath -> IO Strategy
+readInput parser fp = do
     exists <- doesFileExist fp
     if not exists
         then error "file not found"
-        else map parseMoves . lines <$> readFile fp
-    where
-        parseMoves :: String -> (RPS, RPS)
-        parseMoves s = do
-            let x = take 1 s
-                y = take 1 . drop 2 $ s
-            (readRPS x, readRPS y)
+        else map parser . lines <$> readFile fp
+        
+parseMovesV1 :: String -> (RPS, RPS)
+parseMovesV1 s = do
+    let x = take 1 s
+        y = take 1 . drop 2 $ s
+    (readRPS x, readRPS y)
 
-
-readInputP2 :: FilePath -> IO Strategy
-readInputP2 fp = do
-    exists <- doesFileExist fp
-    if not exists
-        then error "file not found"
-        else map parseMoves . lines <$> readFile fp
-    where
-        parseMoves :: String -> (RPS, RPS)
-        parseMoves s = do
-            let x = take 1 s
-                y = take 1 . drop 2 $ s
-            readRPS2 x y
+parseMovesV2 :: String -> (RPS, RPS)
+parseMovesV2 s = do
+    let x = take 1 s
+        y = take 1 . drop 2 $ s
+    readRPS2 x y
